@@ -1,5 +1,6 @@
 from django.contrib import admin
 from chat_room.models import Room, Chat
+from django.contrib.auth.models import User
 
 
 class RoomAdmin(admin.ModelAdmin):
@@ -13,6 +14,12 @@ class RoomAdmin(admin.ModelAdmin):
 class ChatAdmin(admin.ModelAdmin):
     """Диалоги"""
     list_display = ("room", "user", "text", "date")
+
+
+class UserAdmin(admin.ModelAdmin):
+    """Диалоги"""
+    list_display = ("name",)
+
 
 
 admin.site.register(Chat, ChatAdmin)

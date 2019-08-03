@@ -13,16 +13,16 @@ from chat_room.serializers import (RoomSerializers, ChatSerializers, ChatPostSer
 class Rooms(APIView):
     """Комнаты чата"""
     permission_classes = [permissions.IsAuthenticated, ]
-
+    # permission_classes = [permissions.AllowAny]
     def get(self, request):
-        print('request',request)
         rooms = Room.objects.filter(Q(creater=request.user) | Q(invited=request.user))
+        print('++++++++get room', Room.objects.filter(invited=request.user))
         serializer = RoomSerializers(rooms, many=True)
         return Response({"data": serializer.data})
-
-    def post(self, request):
+    def post(self,request):
         Room.objects.create(creater=request.user)
         return Response(status=201)
+
 
 
 class Dialog(APIView):
@@ -43,7 +43,23 @@ class Dialog(APIView):
         dialog = ChatPostSerializers(data=request.data)
         if dialog.is_valid():
             dialog.save(user=request.user)
-            return Response({'status':'add'})
+            return Response(status=201)
         else:
-            return Response({'status':'error'})
+            return Response(status=400)
 
+class AddUsersRoom(APIView):
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users,many=True)
+        return Response({'data':serializer.data})
+
+    def post(self,request):
+        room = request.data.get("room")
+        user = request.data.get('user')
+        try:
+            room = Room.objects.get(id=room)
+            room.invited.add(user)
+            room.save()
+            return Response(status=201)
+        except:
+            return Response(status=400)
